@@ -10,9 +10,8 @@
 #include <fcntl.h>
 
 #include "shell.h"
-#include "parse.h"
+#include "split.h"
 #include "io.h"
-#include "process.h"
 
 char *BATCH = "batch";
 char *INTERACTIVE = "interactive";
@@ -28,16 +27,15 @@ typedef struct fun_desc {
   command_fun *fun;
   char *cmd;
   char *doc;
+  int param_num;
 } fun_desc_t;
 
 fun_desc_t cmd_table[] = {
   {help_command, "?", "show the help menu"},
   {quit_command, "quit", "quit the command shell"},
   {cd_command, "cd", "go to a directory"},
-  {pwd_command, "pwd", "get the working directory address"},
-  {wait_command, "wait", "wait until all background processes are done"}
+  {pwd_command, "pwd", "get the working directory address"}
 };
-static size_t bgCount = 0;
 
 int quit_command(tok_t arg[]) {
   printf("Quitting\n");
@@ -61,14 +59,6 @@ int cd_command(tok_t arg[]){
 int pwd_command(tok_t arg[]){
   char current_path[500];
   printf(getcwd(current_path, sizeof(current_path)));
-  return 1;
-}
-
-int wait_command(tok_t arg[]){
-  while(bgCount > 0){
-    waitpid(-1, NULL, 0);
-    bgCount--;
-  }
   return 1;
 }
 
