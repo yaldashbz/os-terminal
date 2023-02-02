@@ -1,7 +1,7 @@
 # Operating Systems Course Project
 
 ### Sharif University of Technology
-An intteractive terminal
+An intteractive and batch supporter terminal
 
 
 ### Contributors
