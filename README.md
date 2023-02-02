@@ -1,4 +1,4 @@
-# OS Interactive/Batch Terminal
+# Interactive/Batch Terminal
 ## Operating Systems Course Project
 
 ### Sharif University of Technology
