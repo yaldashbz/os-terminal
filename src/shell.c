@@ -13,9 +13,6 @@
 #include "split.h"
 #include "io.h"
 
-char *BATCH = "batch";
-char *INTERACTIVE = "interactive";
-
 int shell_help(char *arg[]);
 int shell_cd(char *arg[]);
 int shell_pwd(char *arg[]);
@@ -72,28 +69,18 @@ int start_shell(FILE *input_file){
 }
 
 int shell (int argc, char *argv[]) {
-    if (!strcmp(argv[1], BATCH)){
-        if (argc > 3){
-            fprintf(stderr, "More arguments than expected for running batch mode.\n");
+    if (argc == 1) start_shell(stdin);
+    else if (argc == 2){
+        batch_fp = fopen(argv[1], "r");
+        if (batch_fp == NULL) {
+            fprintf(stderr, "Batch file does not exist\n");
             exit(EXIT_FAILURE);
-        }else {
-            batch_fp = fopen(argv[2], "r");
-            if (batch_fp == NULL) {
-                fprintf(stderr, "Batch file does not exist\n");
-                exit(EXIT_FAILURE);
-            }
-        }
-        start_shell(batch_fp)
-    }
-    else if(!strcmp(argv[1], INTERACTIVE)){
-        if (argc > 2){
-            fprintf(stderr, "More arguments than expected for running interactive mode.\n");
-            exit(EXIT_FAILURE);
-        }
-        start_shell(stdin)
+        } else{
+            start_shell(batch_fp);
+        } 
     }
     else{
-        fprintf(stderr, "First argument is not valid. First argument can be either batch or interactive.\n");
+        fprintf(stderr, "More arguments than expected for running batch mode.\n");
         exit(EXIT_FAILURE);
     }
 }
