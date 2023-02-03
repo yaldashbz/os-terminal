@@ -59,7 +59,9 @@ fun_desc_t cmd_table[] = {
         {help_command, "?",    "show the help menu"},
         {quit_command, "quit", "quit the command shell"},
         {cd_command,   "cd",   "go to a directory"},
-        {pwd_command,  "pwd",  "get the working directory address"}
+        {pwd_command,  "pwd",  "get the working directory address"},
+        {remove_command, "rm", "remove (unlink) the FILE"},
+        {move_command, "mv", "move and rename a file"}
 };
 
 int quit_command(char *arg[]) {
@@ -85,6 +87,27 @@ int pwd_command(char *arg[]) {
     char current_path[500];
     printf("%s\n", getcwd(current_path, sizeof(current_path)));
     return 1;
+}
+
+int remove_command(tok_t arg[]){
+  char *file_addr_rm = arg[0];
+  if (remove(file_addr_rm) == 0) {
+      printf("The file is deleted successfully.");
+      return 1;
+  } else {
+      printf("The file is not deleted.");
+      return 0;
+  }
+}
+
+int move_command(tok_t arg[]){
+  if(rename(arg[0], arg[1]) == 0) {
+    printf("File renamed successfully");
+    return 1;
+  } else {
+    printf("Error: unable to rename the file");
+    return 0;
+  }
 }
 
 int lookup(char cmd[]) {
