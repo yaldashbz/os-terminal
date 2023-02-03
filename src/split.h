@@ -12,9 +12,9 @@ struct TokensDescStruct {
 };
 typedef struct TokensDescStruct TokenDesc;
 
-TokenDesc split_into_commands(char *input_line);
+TokenDesc *split_into_commands(char *input_line);
 
-TokenDesc split_into_params(char *command);
+TokenDesc *split_into_params(char *command);
 
 int is_direct_tok(char **t, char *R);
 

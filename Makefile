@@ -1,4 +1,4 @@
-SRCS=src/main.c src/shell.c src/split.c src/io.c src/process.c
+SRCS=src/main.c src/shell.c src/split.c src/io.c
 
 EXECUTABLES=shell
 
