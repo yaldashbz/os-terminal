@@ -4,11 +4,24 @@
 #include <stdio.h>
 #include <string.h>
 
-struct Splitted_tokens_desc {
+#define MAX_TOKS 100
+
+struct TokensDescStruct {
     char **tokens_list;
     int tokens_num;
 };
-typedef Splitted_tokens_desc Token_desc;
-Token_desc split_into_commands(char *input_line);
-Token_desc split_into_params(char *command);
+typedef struct TokensDescStruct TokenDesc;
+
+TokenDesc split_into_commands(char *input_line);
+
+TokenDesc split_into_params(char *command);
+
+int is_direct_tok(char **t, char *R);
+
+char **get_toks(char *line);
+
+void free_toks(char **toks);
+
+int toks_length(char **t);
+
 #endif
