@@ -64,21 +64,21 @@ fun_desc_t cmd_table[] = {
         {move_command, "mv", "move and rename a file"}
 };
 
-int quit_command(char *arg[]) {
+int quit_command(char *arg[]){
     printf("Quitting\n");
     exit(0);
     return 1;
 }
 
 int help_command(char *arg[]) {
-    for (int i = 0; i < (sizeof(cmd_table) / sizeof(fun_desc_t)); i++) {
-        printf("%s: %s\n", cmd_table[i].cmd, cmd_table[i].doc);
+    for (int i=0; i < (sizeof(cmd_table)/sizeof(fun_desc_t)); i++) {
+        printf("%s: %s\n",cmd_table[i].cmd, cmd_table[i].doc);
     }
     return 1;
 }
 
-int cd_command(char *arg[]) {
-    char *new_dir = arg[0];
+int cd_command(char *arg[]){
+    char* new_dir = arg[0];
     chdir(new_dir);
     return 1;
 }
@@ -90,24 +90,24 @@ int pwd_command(char *arg[]) {
 }
 
 int remove_command(tok_t arg[]){
-  char *file_addr_rm = arg[0];
-  if (remove(file_addr_rm) == 0) {
-      printf("The file is deleted successfully.");
-      return 1;
-  } else {
-      printf("The file is not deleted.");
-      return 0;
-  }
+    char *file_addr_rm = arg[0];
+    if (remove(file_addr_rm) == 0) {
+        printf("The file is deleted successfully.");
+        return 1;
+    } else {
+        printf("The file is not deleted.");
+        return 0;
+    }
 }
 
 int move_command(tok_t arg[]){
-  if(rename(arg[0], arg[1]) == 0) {
-    printf("File renamed successfully");
-    return 1;
-  } else {
-    printf("Error: unable to rename the file");
-    return 0;
-  }
+    if(rename(arg[0], arg[1]) == 0) {
+        printf("File renamed successfully");
+        return 1;
+    } else {
+        printf("Error: unable to rename the file");
+        return 0;
+    }
 }
 
 int lookup(char cmd[]) {
@@ -122,9 +122,10 @@ int start_shell(FILE *input_file){
     while(1){
         input_line = read_line(input_file);
         TokenDesc commands_t = split_into_commands(input_line);
-        return 1;
     }
+    return 1;
 }
+
 
 /**
  * Find execuatable file from PATH.
@@ -230,35 +231,24 @@ int io_redirect(char *arg[]) {
     return 0;
 }
 
-//
-//int shell(int argc, char *argv[]) {
-//    if (!strcmp(argv[1], BATCH)) {
-//        if (argc > 3) {
-//            fprintf(stderr, "More arguments than expected for running batch mode.\n");
-//            exit(EXIT_FAILURE);
-//        } else {
-//            FILE *batch_fp = fopen(argv[2], "r");
-//            if (batch_fp == NULL) {
-//                fprintf(stderr, "Batch file does not exist\n");
-//                exit(EXIT_FAILURE);
-//            }
-//            start_shell(batch_fp);
-//        }
-//    } else if (!strcmp(argv[1], INTERACTIVE)) {
-//        if (argc > 2) {
-//            fprintf(stderr, "More arguments than expected for running interactive mode.\n");
-//            exit(EXIT_FAILURE);
-//        }
-//        start_shell(stdin);
-//    } else {
-//        fprintf(stderr, "First argument is not valid. First argument can be either batch or interactive.\n");
-//        exit(EXIT_FAILURE);
-//    }
-//}
+int shell (int argc, char *argv[]) {
+    if (argc == 1) start_shell(stdin);
+    else if (argc == 2){
+        FILE* batch_fp = fopen(argv[1], "r");
+        if (batch_fp == NULL) {
+            fprintf(stderr, "Batch file does not exist\n");
+            exit(EXIT_FAILURE);
+        } else{
+            start_shell(batch_fp);
+        }
+    }
+    else{
+        fprintf(stderr, "More arguments than expected for running batch mode.\n");
+        exit(EXIT_FAILURE);
+    }
+}
 
-/**
- * Intialization procedures for this shell
- */
+
 void init_shell() {
     /* Check if we are running interactively */
     shell_terminal = STDIN_FILENO;
