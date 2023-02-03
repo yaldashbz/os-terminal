@@ -106,7 +106,7 @@ int process_exec(char *command) {
         printf("\033[;33m%s\33[0m\n", command);
     }
 
-    TokenDesc *param_t = split_into_params(command);
+    token_desc_t *param_t = split_into_params(command);
     if (param_t->tokens_num > MAX_COMMAND_LEN) {
         fprintf(stderr, "Exceeded maximum command length!\n");
         exit(0);
@@ -173,7 +173,7 @@ int start_shell(FILE *input_file) {
             printf("\n");
             break;
         }
-        TokenDesc *commands_t = split_into_commands(input_line);
+        token_desc_t *commands_t = split_into_commands(input_line);
         char **tokens = commands_t->tokens_list;
         for (int i = 0; i < commands_t->tokens_num; i++) {
             start_process(tokens[i]);

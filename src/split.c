@@ -27,7 +27,7 @@ char *trim(char *s) {
     return rtrim(ltrim(s));
 }
 
-TokenDesc *split_into_commands(char *input_line) {
+token_desc_t *split_into_commands(char *input_line) {
     /* remove \n from commands (happens in last command) */
     if (input_line[strlen(input_line) - 1] == '\n') input_line[strlen(input_line) - 1] = '\0';
 
@@ -45,13 +45,13 @@ TokenDesc *split_into_commands(char *input_line) {
         }
         token = strtok(NULL, ";");
     }
-    TokenDesc *tokens_t = (TokenDesc *) malloc(sizeof(TokenDesc));
+    token_desc_t *tokens_t = (token_desc_t *) malloc(sizeof(token_desc_t));
     tokens_t->tokens_num = commands_num;
     tokens_t->tokens_list = commands_list;
     return tokens_t;
 }
 
-TokenDesc *split_into_params(char *command) {
+token_desc_t *split_into_params(char *command) {
     /* remove escape char from commands (happens in reading from file) */
     if ((int) command[strlen(command) - 1] == 13) command[strlen(command) - 1] = '\0';
 
@@ -67,7 +67,7 @@ TokenDesc *split_into_params(char *command) {
         param_num += 1;
         token = strtok(NULL, " ");
     }
-    TokenDesc *tokens_t = (TokenDesc *) malloc(sizeof(TokenDesc));
+    token_desc_t *tokens_t = (token_desc_t *) malloc(sizeof(token_desc_t));
     tokens_t->tokens_num = param_num;
     tokens_t->tokens_list = param_list;
     return tokens_t;
