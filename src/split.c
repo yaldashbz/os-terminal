@@ -1,7 +1,7 @@
 #include <malloc.h>
 #include "split.h"
 
-#define TOKseparator " \n:"
+#define TOK_SEP " \n:"
 
 int MAX_CMD_IN_LINE = 10;
 int MAX_PARAM_NUM = 20;
@@ -12,19 +12,23 @@ char *ltrim(char *s) {
 }
 
 char *rtrim(char *s) {
-// TODO: fix bug ; in end
     char *back = s + strlen(s);
     while (((char) (*--back) == ' '));
     *(back + 1) = '\0';
     return s;
 }
 
+/**
+ * Trim the given string
+ * @param s: given string
+ * @return trimmed string
+ */
 char *trim(char *s) {
     return rtrim(ltrim(s));
 }
 
 TokenDesc *split_into_commands(char *input_line) {
-    // TODO: remove:
+    /* remove \n from commands (happens in last command) */
     if (input_line[strlen(input_line) - 1] == '\n') input_line[strlen(input_line) - 1] = '\0';
 
     char **commands_list = (char **) malloc(MAX_CMD_IN_LINE * sizeof(char *));
@@ -48,7 +52,7 @@ TokenDesc *split_into_commands(char *input_line) {
 }
 
 TokenDesc *split_into_params(char *command) {
-    // TODO: remove:
+    /* remove escape char from commands (happens in reading from file) */
     if ((int) command[strlen(command) - 1] == 13) command[strlen(command) - 1] = '\0';
 
     char **param_list = (char **) malloc(MAX_PARAM_NUM * sizeof(char *));
@@ -71,7 +75,7 @@ TokenDesc *split_into_params(char *command) {
 
 /**
  * Locates the character R in the token array t.
- * Please note that R must be of length 1.
+ * R must be of length 1.
  * Returns the token that is an exact match of R.
  */
 int is_direct_tok(char **t, char *R) {
@@ -91,28 +95,12 @@ char **get_toks(char *line) {
     /** Intializes an empty token array */
     for (i = 0; i < MAX_TOKS; i++) toks[i] = NULL;
 
-    /* Start tokenizer on line */
-    c = strtok(line, TOKseparator);
+    /* Start tokenizer on one line */
+    c = strtok(line, TOK_SEP);
     for (i = 0; c && i < MAX_TOKS; i++) {
         toks[i] = c;
         /* scan for next token */
-        c = strtok(NULL, TOKseparator);
+        c = strtok(NULL, TOK_SEP);
     }
     return toks;
 }
-
-void free_toks(char **toks) {
-    free(toks);
-}
-
-/**
- * Return this token array's length
- */
-int toks_length(char **t) {
-    int length = 0;
-    while (length < MAX_TOKS && t[length]) {
-        length++;
-    }
-    return length;
-}
-

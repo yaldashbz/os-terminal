@@ -20,8 +20,4 @@ int is_direct_tok(char **t, char *R);
 
 char **get_toks(char *line);
 
-void free_toks(char **toks);
-
-int toks_length(char **t);
-
 #endif
