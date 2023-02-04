@@ -20,8 +20,6 @@ int help_command(char *arg[]);
 
 int cd_command(char *arg[]);
 
-int pwd_command(char *arg[]);
-
 int quit_command(char *arg[]);
 
 char *find_file_from_path(char *filename, char *path_tokens[]);
@@ -46,7 +44,6 @@ fun_desc_t cmd_table[] = {
         {help_command, "?",    "show the help menu"},
         {quit_command, "quit", "quit the command shell"},
         {cd_command,   "cd",   "go to a directory"},
-        {pwd_command,  "pwd",  "get the working directory address"},
 };
 
 int quit_command(char *arg[]) {
@@ -67,17 +64,6 @@ int cd_command(char *arg[]) {
         return 1;
     }
     return 0;
-}
-
-int pwd_command(char *arg[]) {
-    char *cwd = (char *) malloc(PATH_MAX + 1);
-    getcwd(cwd, PATH_MAX);
-    if (cwd != NULL) {
-        printf("%s\n", cwd);
-        free(cwd);
-        return 0;
-    }
-    return 1;
 }
 
 /**
@@ -107,23 +93,24 @@ int process_exec(char *command) {
     }
 
     token_desc_t *param_t = split_into_params(command);
+    char **tokens = param_t->tokens_list;
     if (strlen(command) > MAX_COMMAND_LEN) {
         fprintf(stderr, "Exceeded maximum command length!\n");
         exit(0);
     }
-    int index = lookup(param_t->tokens_list[0]);
+    int index = lookup(tokens[0]);
 
     if (index >= 0) {
-        cmd_table[index].fun(&param_t->tokens_list[1]);
+        cmd_table[index].fun(&tokens[1]);
     } else {
-        if (io_redirect(param_t->tokens_list) < 0) {
+        if (io_redirect(tokens) < 0) {
             exit(0);
         }
-        path_resolve(param_t->tokens_list, path_tokens);
+        path_resolve(tokens, path_tokens);
         undo_signal();
 
-        if (execv(param_t->tokens_list[0], param_t->tokens_list) < 0) {
-            fprintf(stderr, "%s : Command not found\n", param_t->tokens_list[0]);
+        if (execv(tokens[0], tokens) < 0) {
+            fprintf(stderr, "%s : Command not found.\n", tokens[0]);
             exit(0);
         }
     }
@@ -132,13 +119,13 @@ int process_exec(char *command) {
     return 0;
 }
 
-int check_cd_quit(char *command){
+int check_cd_quit(const char *command) {
     int is_cd = (command[0] == 'c' && command[1] == 'd');
     int is_quit = (command[0] == 'q' && command[1] == 'u' && command[2] == 'i' && command[3] == 't');
     return is_cd || is_quit;
 }
 
-int start_process(char *command) {
+pid_t start_process(char *command) {
     if (check_cd_quit(command)) {
         process_exec(command);
         return 0;
@@ -151,7 +138,7 @@ int start_process(char *command) {
         fprintf(stderr, "Could not fork for %s.\n", command);
         return 1;
     }
-    return 0;
+    return pid;
 }
 
 /**
@@ -174,7 +161,7 @@ int start_shell(FILE *input_file) {
         input_line = read_line(input_file);
         if (input_line == NULL) {
             // CTRL + D
-            printf("\n");
+            if (shell_is_interactive) printf("\n");
             break;
         }
         token_desc_t *commands_t = split_into_commands(input_line);
@@ -198,7 +185,7 @@ int start_shell(FILE *input_file) {
  * @return
  */
 char *find_file_from_path(char *filename, char *path_tokens[]) {
-    char *ret = (char *) malloc(PATH_MAX + MAXLINE + 2);
+    char *ret = (char *) malloc(PATH_MAX + MAX_LINE + 2);
     struct dirent *ent;
     for (int i = 1; i < MAX_TOKS && path_tokens[i]; ++i) {
         DIR *dir;
@@ -208,7 +195,7 @@ char *find_file_from_path(char *filename, char *path_tokens[]) {
             if (strcmp(ent->d_name, filename) == 0) {
                 strncpy(ret, path_tokens[i], PATH_MAX);
                 strncat(ret, "/", 1);
-                strncat(ret, filename, MAXLINE);
+                strncat(ret, filename, MAX_LINE);
                 return ret;
             }
         }
@@ -242,8 +229,8 @@ void undo_signal() {
 }
 
 /**
- *  Ignore interactive and job-control signals
-*/
+ * Ignore interactive and job-control signals
+ */
 void ignore_signal() {
     signal(SIGINT, SIG_IGN);
     signal(SIGQUIT, SIG_IGN);
@@ -253,48 +240,75 @@ void ignore_signal() {
 }
 
 /**
- * IO Redirection
+ * Input Redirection
+ * @param arg: tokens of the command
+ * @param in_redir: index or -1
+ * @return 0 if can be redirected else -1
+ */
+int input_redirect(char *arg[], int in_redir) {
+    int i, fd;
+    if (arg[in_redir + 1] == NULL ||
+        strcmp(arg[in_redir + 1], ">") == 0 ||
+        strcmp(arg[in_redir + 1], "<") == 0) {
+        fprintf(stderr, "%s : Syntax error.\n", arg[0]);
+        return -1;
+    }
+    if ((fd = open(arg[in_redir + 1], O_RDONLY, 0)) < 0) {
+        fprintf(stderr, "%s : No such file or directory.\n", arg[in_redir + 1]);
+        return -1;
+    }
+    dup2(fd, STDIN_FILENO);
+    for (i = in_redir; i < MAX_TOKS - 2 && arg[i + 2]; ++i) {
+        free(arg[i]);
+        arg[i] = arg[i + 2];
+    }
+    arg[i] = NULL;
+    return 0;
+}
+
+/**
+ * Ouput Redirection
+ * @param arg: tokens of the command
+ * @param out_redir: index or -1
+ * @return 0 if can be redirected else -1
+ */
+int output_redirect(char *arg[], int out_redir) {
+    int i, fd;
+    if (arg[out_redir + 1] == NULL ||
+        strcmp(arg[out_redir + 1], ">") == 0 ||
+        strcmp(arg[out_redir + 1], "<") == 0) {
+        fprintf(stderr, "%s : Syntax error.\n", arg[0]);
+        return -1;
+    }
+    if ((fd = open(arg[out_redir + 1], O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)) <
+        0) {
+        fprintf(stderr, "%s : No such file or directory.\n", arg[out_redir + 1]);
+        return -1;
+    }
+    dup2(fd, STDOUT_FILENO);
+    for (i = out_redir; i < MAX_TOKS - 2 && arg[i + 2]; ++i) {
+        free(arg[i]);
+        arg[i] = arg[i + 2];
+    }
+    arg[i] = NULL;
+    return 0;
+}
+
+/**
+ *  IO Redirection
+ * @param arg: tokens of the command
+ * @return it can be redirected or not
  */
 int io_redirect(char *arg[]) {
-    int i, fd;
     int in_redir = is_direct_tok(arg, "<");
     int out_redir = is_direct_tok(arg, ">");
     if (in_redir != 0) {
-        if (arg[in_redir + 1] == NULL ||
-            strcmp(arg[in_redir + 1], ">") == 0 ||
-            strcmp(arg[in_redir + 1], "<") == 0) {
-            fprintf(stderr, "%s : Syntax error.\n", arg[0]);
-            return -1;
-        }
-        if ((fd = open(arg[in_redir + 1], O_RDONLY, 0)) < 0) {
-            fprintf(stderr, "%s : No such file or directory.\n", arg[in_redir + 1]);
-            return -1;
-        }
-        dup2(fd, STDIN_FILENO);
-        for (i = in_redir; i < MAX_TOKS - 2 && arg[i + 2]; ++i) {
-            free(arg[i]);
-            arg[i] = arg[i + 2];
-        }
-        arg[i] = NULL;
+        int check = input_redirect(arg, in_redir);
+        if (check == -1) return -1;
     }
     if (out_redir != 0) {
-        if (arg[out_redir + 1] == NULL ||
-            strcmp(arg[out_redir + 1], ">") == 0 ||
-            strcmp(arg[out_redir + 1], "<") == 0) {
-            fprintf(stderr, "%s : Syntax error.\n", arg[0]);
-            return -1;
-        }
-        if ((fd = open(arg[out_redir + 1], O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)) <
-            0) {
-            fprintf(stderr, "%s : No such file or directory.\n", arg[out_redir + 1]);
-            return -1;
-        }
-        dup2(fd, STDOUT_FILENO);
-        for (i = out_redir; i < MAX_TOKS - 2 && arg[i + 2]; ++i) {
-            free(arg[i]);
-            arg[i] = arg[i + 2];
-        }
-        arg[i] = NULL;
+        int check = output_redirect(arg, out_redir);
+        if (check == -1) return -1;
     }
     return 0;
 }
@@ -312,7 +326,7 @@ int shell(int argc, char *argv[]) {
     } else if (argc == 2) {
         FILE *batch_fp = fopen(argv[1], "r");
         if (batch_fp == NULL) {
-            fprintf(stderr, "Batch file does not exist\n");
+            fprintf(stderr, "Batch file does not exist.\n");
             exit(EXIT_FAILURE);
         } else {
             shell_is_interactive = 0;
