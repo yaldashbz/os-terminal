@@ -61,14 +61,17 @@ token_desc_t *split_into_params(char *command) {
     int param_num = 0;
     char *token = strtok(command, " ");
     while (token != NULL) {
-        token = trim(token);
-        int len = strlen(token) + 1;
-        char *r = malloc(len);
-        strncpy(r, token, len);
-        param_list[param_num] = r;
-        param_num += 1;
-        token = strtok(NULL, " ");
+        if (strlen(trim(token)) > 0){
+            token = trim(token);
+            int len = strlen(token) + 1;
+            char *r = malloc(len);
+            strncpy(r, token, len);
+            param_list[param_num] = r;
+            param_num += 1;
+            token = strtok(NULL, " ");
+        }
     }
+    param_list[param_num] = NULL;
     token_desc_t *tokens_t = (token_desc_t *) malloc(sizeof(token_desc_t));
     tokens_t->tokens_num = param_num;
     tokens_t->tokens_list = param_list;
