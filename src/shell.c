@@ -107,7 +107,6 @@ int process_exec(char *command) {
     }
 
     token_desc_t *param_t = split_into_params(command);
-    
     if (strlen(command) > MAX_COMMAND_LEN) {
         fprintf(stderr, "Exceeded maximum command length!\n");
         exit(0);
@@ -120,7 +119,6 @@ int process_exec(char *command) {
         if (io_redirect(param_t->tokens_list) < 0) {
             exit(0);
         }
-
         path_resolve(param_t->tokens_list, path_tokens);
         undo_signal();
 
