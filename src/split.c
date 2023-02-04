@@ -7,13 +7,15 @@ int MAX_CMD_IN_LINE = 10;
 int MAX_PARAM_NUM = 20;
 
 char *ltrim(char *s) {
-    while (((char) (*s) == ' ')) s++;
+    while (((int) (*s) < 33) && ((int) (*s) > 0)) s++;
     return s;
 }
 
 char *rtrim(char *s) {
-    char *back = s + strlen(s);
-    while (((char) (*--back) == ' '));
+    char *back = s + strlen(s) - 1;
+    while (((int) (*back) < 33) && ((int) (*back) > 0)){
+        back -= 1;
+    };
     *(back + 1) = '\0';
     return s;
 }

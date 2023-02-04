@@ -1,0 +1,7 @@
+cp batch.txt batch1.txt
+ls
+ls;pwd ;;; touch batch.txt
+rm batch1.txt
+ls
+ls -l
+quit
