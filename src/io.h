@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-#define MAXLINE 1024
+#define MAX_LINE 1024
 
 char *read_line(FILE *batch_file);
 

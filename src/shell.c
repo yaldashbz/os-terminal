@@ -170,7 +170,7 @@ int start_shell(FILE *input_file) {
         input_line = read_line(input_file);
         if (input_line == NULL) {
             // CTRL + D
-            printf("\n");
+            if (shell_is_interactive) printf("\n");
             break;
         }
         token_desc_t *commands_t = split_into_commands(input_line);
@@ -194,7 +194,7 @@ int start_shell(FILE *input_file) {
  * @return
  */
 char *find_file_from_path(char *filename, char *path_tokens[]) {
-    char *ret = (char *) malloc(PATH_MAX + MAXLINE + 2);
+    char *ret = (char *) malloc(PATH_MAX + MAX_LINE + 2);
     struct dirent *ent;
     for (int i = 1; i < MAX_TOKS && path_tokens[i]; ++i) {
         DIR *dir;
@@ -204,7 +204,7 @@ char *find_file_from_path(char *filename, char *path_tokens[]) {
             if (strcmp(ent->d_name, filename) == 0) {
                 strncpy(ret, path_tokens[i], PATH_MAX);
                 strncat(ret, "/", 1);
-                strncat(ret, filename, MAXLINE);
+                strncat(ret, filename, MAX_LINE);
                 return ret;
             }
         }
@@ -308,7 +308,7 @@ int shell(int argc, char *argv[]) {
     } else if (argc == 2) {
         FILE *batch_fp = fopen(argv[1], "r");
         if (batch_fp == NULL) {
-            fprintf(stderr, "Batch file does not exist\n");
+            fprintf(stderr, "Batch file does not exist.\n");
             exit(EXIT_FAILURE);
         } else {
             shell_is_interactive = 0;
