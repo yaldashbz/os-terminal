@@ -31,7 +31,8 @@ char *trim(char *s) {
 
 token_desc_t *split_into_commands(char *input_line) {
     /* remove \n from commands (happens in last command) */
-    if (input_line[strlen(input_line) - 1] == '\n') input_line[strlen(input_line) - 1] = '\0';
+    if (input_line[strlen(input_line) - 1] == '\n')
+        input_line[strlen(input_line) - 1] = '\0';
 
     char **commands_list = (char **) malloc(MAX_CMD_IN_LINE * sizeof(char *));
     int commands_num = 0;
@@ -55,7 +56,8 @@ token_desc_t *split_into_commands(char *input_line) {
 
 token_desc_t *split_into_params(char *command) {
     /* remove escape char from commands (happens in reading from file) */
-    if ((int) command[strlen(command) - 1] == 13) command[strlen(command) - 1] = '\0';
+    if ((int) command[strlen(command) - 1] == 13)
+        command[strlen(command) - 1] = '\0';
 
     char **param_list = (char **) malloc(MAX_PARAM_NUM * sizeof(char *));
     int param_num = 0;
