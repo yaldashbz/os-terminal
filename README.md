@@ -8,6 +8,6 @@ An intteractive and batch supporter terminal
 ### Contributors
 | Members |
 | :---:   |
-| `` |
-| ``  |
-| ``  |
+| `Yalda Shabanzadeh` |
+| `Yasaman Zolfi`  |
+| `Sayeh Jarollahi`  |
