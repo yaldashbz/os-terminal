@@ -107,11 +107,11 @@ int process_exec(char *command) {
     }
 
     token_desc_t *param_t = split_into_params(command);
-    if (param_t->tokens_num > MAX_COMMAND_LEN) {
+    
+    if (strlen(command) > MAX_COMMAND_LEN) {
         fprintf(stderr, "Exceeded maximum command length!\n");
         exit(0);
     }
-
     int index = lookup(param_t->tokens_list[0]);
 
     if (index >= 0) {
@@ -134,8 +134,14 @@ int process_exec(char *command) {
     return 0;
 }
 
+int check_cd_quit(char *command){
+    int is_cd = (command[0] == 'c' && command[1] == 'd');
+    int is_quit = (command[0] == 'q' && command[1] == 'u' && command[2] == 'i' && command[3] == 't');
+    return is_cd || is_quit;
+}
+
 int start_process(char *command) {
-    if ((command[0] == 'c' && command[1] == 'd') || strcmp(command, "quit") == 0) {
+    if (check_cd_quit(command)) {
         process_exec(command);
         return 0;
     }
