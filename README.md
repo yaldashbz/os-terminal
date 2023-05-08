@@ -5,7 +5,7 @@
 An intteractive and batch supporter terminal
 
 
-### Contributors
+### Contributorsl
 | Members |
 | :---:   |
 | `Yalda Shabanzadeh` |
